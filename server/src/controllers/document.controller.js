@@ -1,13 +1,14 @@
 import { Document } from '../models/document.model.js';
 import { Query } from '../models/query.model.js';
 import path from 'path'
+import extract from '../utilities/extractDocument.util.js';
 
 const handleDocument = async (req, res) => {
     try {
         const documents = req.files;
         if(!documents)
         {
-            return req.status(400).json({
+            return res.status(400).json({
                 message: "Document is required",
                 statusCode: 400,
                 success: false 
@@ -16,7 +17,7 @@ const handleDocument = async (req, res) => {
         const query = req.body.query;
         if(!query)
         {
-            return req.status(400).json({
+            return res.status(400).json({
                 message: "Query is required",
                 statusCode: 400,
                 success: false
@@ -30,7 +31,7 @@ const handleDocument = async (req, res) => {
         for(const document of documents)
         {
             const type = path.extname(document.filename).slice(1).toLowerCase();
-            const extractedText = await extract(document);
+            const extractedText = await extract(document.path, type);
             
             const doc = await Document.create({
                 documentName: document.filename,
@@ -73,12 +74,12 @@ const handleDocument = async (req, res) => {
             return res.status(500).json({
                 message: "Failed to create query in database",
                 statusCode: 500,
-                success: true
+                success: false
             })
         }
 
         return res.status(200).json({
-            message: "Reponse send successfully",
+            message: "Response sent successfully",
             response: AImodelResponse,
             statusCode: 200,
             success: true
